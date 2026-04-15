@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Présences — Edulab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet"/>
+<!-- Office.js — obligatoire pour l'add-in Excel -->
+<script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+<style>
+/* ══════════════════════════════════════════
+   VARIABLES
+══════════════════════════════════════════ */
+:root {
+  --bg:        #fff9f0;
+  --surface:   #ffffff;
+  --border:    #ffe0b2;
+  --accent1:   #ff6b35;
+  --accent2:   #ffcd3c;
+  --accent3:   #4ecdc4;
+  --green:     #22c55e;
+  --green-bg:  #dcfce7;
+  --green-bd:  #86efac;
+  --red:       #ef4444;
+  --red-bg:    #fee2e2;
+  --red-bd:    #fca5a5;
+  --text:      #1e1b18;
+  --text-soft: #78716c;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-xl: 32px;
+  --shadow:    0 2px 12px rgba(0,0,0,.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,.14);
+  --font-d:    'Baloo 2', cursive;
+  --font-b:    'Nunito', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  font-family: var(--font-b);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ══════════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════════ */
+.app {
+  display: grid;
+  grid-template-rows: 76px 66px auto 1fr auto;
+  height: 100vh;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: linear-gradient(135deg,#ff6b35 0%,#ff9a3c 55%,#ffcd3c 100%);
+  position: relative;
+  overflow: hidden;
+}
+header::before {
+  content:"";position:absolute;top:-30px;right:-20px;
+  width:130px;height:130px;border-radius:50%;
+  background:rgba(255,255,255,.15);pointer-events:none;
+}
+.brand { display:flex;align-items:center;gap:11px;z-index:1; }
+.logo {
+  width:42px;height:42px;background:white;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.title {
+  font-family:var(--font-d);font-size:20px;font-weight:800;
+  color:white;text-shadow:0 1px 3px rgba(0,0,0,.15);line-height:1.1;
+}
+.title span {
+  display:block;font-size:11px;font-weight:600;
+  opacity:.85;letter-spacing:.5px;text-transform:uppercase;
+}
+.header-pills { display:flex;gap:7px;z-index:1; }
+.pill {
+  background:rgba(255,255,255,.25);backdrop-filter:blur(8px);
+  border:1.5px solid rgba(255,255,255,.4);border-radius:20px;
+  padding:3px 11px;font-size:12px;font-weight:700;color:white;
+  display:flex;align-items:center;gap:4px;
+}
+.dot { width:7px;height:7px;border-radius:50%; }
+.dot-p { background:white; }
+.dot-a { background:rgba(255,255,255,.5); }
+
+/* ══════════════════════════════════════════
+   TOOLBAR
+══════════════════════════════════════════ */
+.toolbar {
+  display:flex;align-items:center;gap:10px;
+  padding:0 16px;background:var(--surface);
+  border-bottom:2px solid var(--border);
+}
+.field {
+  display:flex;align-items:center;gap:7px;
+  background:var(--bg);border:2px solid var(--border);
+  border-radius:var(--radius-sm);padding:5px 10px;
+  transition:border-color .2s,box-shadow .2s;
+}
+.field:focus-within {
+  border-color:var(--accent1);
+  box-shadow:0 0 0 3px rgba(255,107,53,.15);
+}
+.field.search { flex:1; }
+.field .ico { font-size:16px;color:var(--text-soft); }
+.field input {
+  border:none;background:transparent;
+  font-family:var(--font-b);font-size:13px;
+  color:var(--text);outline:none;width:100%;
+}
+.field input::placeholder { color:#a8a29e; }
+.field input[type="date"] { font-weight:700;cursor:pointer; }
+
+.btn-ico {
+  width:36px;height:36px;border:none;border-radius:var(--radius-sm);
+  background:var(--bg);border:2px solid var(--border);
+  cursor:pointer;font-size:17px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;flex-shrink:0;
+}
+.btn-ico:hover { border-color:var(--accent1);background:#fff4ed;transform:scale(1.05); }
+
+/* ══════════════════════════════════════════
+   QUICK BAR
+══════════════════════════════════════════ */
+.quick {
+  display:flex;align-items:center;gap:7px;
+  padding:8px 16px 0;flex-wrap:wrap;
+}
+.chip {
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 13px;border:none;border-radius:20px;
+  font-family:var(--font-b);font-size:12px;font-weight:700;
+  cursor:pointer;transition:all .18s;flex-shrink:0;
+}
+.chip:hover { transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.12); }
+.chip-p { background:var(--green-bg);color:#15803d;border:1.5px solid var(--green-bd); }
+.chip-a { background:var(--red-bg);color:#b91c1c;border:1.5px solid var(--red-bd); }
+.chip-r { background:#f5f5f4;color:var(--text-soft);border:1.5px solid #e7e5e4; }
+.cpt { margin-left:auto;font-size:11px;color:var(--text-soft);font-weight:600;white-space:nowrap; }
+
+/* ══════════════════════════════════════════
+   GRILLE ÉLÈVES
+══════════════════════════════════════════ */
+.scroll {
+  overflow-y:auto;padding:10px 16px 0;
+}
+.scroll::-webkit-scrollbar { width:5px; }
+.scroll::-webkit-scrollbar-thumb { background:#d6d3d1;border-radius:3px; }
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+  gap:9px;padding-bottom:10px;
+}
+
+.card {
+  background:var(--surface);border:2.5px solid #e7e5e4;
+  border-radius:var(--radius-md);padding:13px 13px 11px;
+  cursor:pointer;user-select:none;
+  transition:border-color .18s,background .18s,transform .18s,box-shadow .18s;
+  display:flex;flex-direction:column;gap:7px;
+  box-shadow:var(--shadow);
+}
+.card:hover { transform:translateY(-2px);box-shadow:var(--shadow-lg); }
+.card:active { transform:scale(.98); }
+.card.present { background:var(--green-bg);border-color:var(--green-bd); }
+.card.present .avatar { background:var(--green);color:white; }
+.card.absent  { background:var(--red-bg);border-color:var(--red-bd); }
+.card.absent  .avatar { background:var(--red);color:white; }
+
+.card-top { display:flex;align-items:center;gap:9px; }
+.avatar {
+  width:36px;height:36px;border-radius:9px;
+  background:#f5f5f4;color:#a8a29e;
+  font-family:var(--font-d);font-size:15px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background .18s,color .18s;
+}
+.nom {
+  font-size:13px;font-weight:700;line-height:1.3;
+  overflow:hidden;display:-webkit-box;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
+.badge {
+  margin-left:auto;font-size:10px;font-weight:800;
+  padding:2px 7px;border-radius:7px;
+  letter-spacing:.5px;text-transform:uppercase;flex-shrink:0;
+}
+.b-none    { background:#f5f5f4;color:#a8a29e; }
+.b-present { background:var(--green);color:white; }
+.b-absent  { background:var(--red);color:white; }
+.hint { font-size:10px;color:#c4b5a5;font-weight:600;text-transform:uppercase;letter-spacing:.4px; }
+.card.present .hint,.card.absent .hint { opacity:.6; }
+
+/* ══════════════════════════════════════════
+   EMPTY / LOADING
+══════════════════════════════════════════ */
+.empty {
+  grid-column:1/-1;text-align:center;
+  padding:40px 20px;color:var(--text-soft);
+}
+.empty .emo { font-size:44px;display:block;margin-bottom:10px; }
+.empty p { font-size:14px;font-weight:700; }
+.empty small { font-size:12px;color:#a8a29e; }
+
+/* ══════════════════════════════════════════
+   SAVE BAR
+══════════════════════════════════════════ */
+.save-bar {
+  padding:10px 16px;background:var(--surface);
+  border-top:2px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.btn-save {
+  flex:1;padding:11px 20px;border:none;
+  border-radius:var(--radius-md);
+  background:linear-gradient(135deg,var(--accent1),#ff9a3c);
+  color:white;font-family:var(--font-d);font-size:15px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 16px rgba(255,107,53,.35);
+}
+.btn-save:hover { transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,107,53,.45); }
+.btn-save:active { transform:none; }
+.btn-save:disabled { background:linear-gradient(135deg,#d4d4d4,#a8a29e);box-shadow:none;cursor:default;transform:none; }
+.status { font-size:11px;font-weight:700;min-width:110px;text-align:right; }
+.ok  { color:var(--green); }
+.err { color:var(--red); }
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+.toast {
+  position:fixed;bottom:80px;left:50%;
+  transform:translateX(-50%) translateY(16px);
+  background:#1c1917;color:white;
+  padding:9px 18px;border-radius:18px;
+  font-size:13px;font-weight:700;
+  pointer-events:none;opacity:0;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap;z-index:999;
+}
+.toast.on { opacity:1;transform:translateX(-50%) translateY(0); }
+
+/* ══════════════════════════════════════════
+   LOADING OVERLAY
+══════════════════════════════════════════ */
+.overlay {
+  position:fixed;inset:0;
+  background:rgba(255,249,240,.92);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;
+  z-index:100;transition:opacity .3s;
+}
+.overlay.off { opacity:0;pointer-events:none; }
+.spinner {
+  width:44px;height:44px;
+  border:4px solid #ffe0b2;border-top-color:var(--accent1);
+  border-radius:50%;animation:spin .7s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-txt { font-family:var(--font-d);font-size:17px;font-weight:700;color:var(--accent1); }
+
+/* ══════════════════════════════════════════
+   MODAL CONFIG
+══════════════════════════════════════════ */
+.modal-bg {
+  position:fixed;inset:0;background:rgba(0,0,0,.4);
+  backdrop-filter:blur(4px);display:flex;
+  align-items:center;justify-content:center;
+  z-index:300;opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.modal-bg.on { opacity:1;pointer-events:all; }
+.modal {
+  background:var(--surface);border-radius:var(--radius-xl);
+  padding:26px;width:90%;max-width:460px;
+  transform:scale(.9);transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 24px 64px rgba(0,0,0,.2);
+}
+.modal-bg.on .modal { transform:scale(1); }
+.modal h2 { font-family:var(--font-d);font-size:18px;font-weight:800;margin-bottom:16px; }
+.modal label { font-size:12px;font-weight:700;color:var(--text-soft);display:block;margin-bottom:4px;margin-top:12px; }
+.modal input {
+  width:100%;padding:8px 12px;
+  border:2px solid var(--border);border-radius:var(--radius-sm);
+  font-family:var(--font-b);font-size:13px;outline:none;
+  transition:border-color .2s;
+}
+.modal input:focus { border-color:var(--accent1); }
+.modal-note { font-size:11px;color:var(--text-soft);margin-top:8px;line-height:1.5; }
+.modal-btns { display:flex;gap:8px;margin-top:18px; }
+.btn-primary {
+  flex:1;padding:10px;border:none;border-radius:var(--radius-sm);
+  background:linear-gradient(135deg,var(--accent1),#ff9a3c);
+  color:white;font-family:var(--font-d);font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.btn-primary:hover { opacity:.9; }
+.btn-secondary {
+  padding:10px 16px;border:2px solid var(--border);border-radius:var(--radius-sm);
+  background:transparent;font-family:var(--font-b);font-size:13px;font-weight:700;
+  color:var(--text-soft);cursor:pointer;transition:all .2s;
+}
+.btn-secondary:hover { border-color:#aaa; }
+
+/* animations carte */
+@keyframes pop { 0%{transform:scale(1)}40%{transform:scale(1.07)}100%{transform:scale(1)} }
+.card.pop { animation:pop .22s ease; }
+
+@media(max-width:560px){
+  .grid{grid-template-columns:repeat(2,1fr);}
+  .header-pills{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="spinner"></div>
+  <div class="loading-txt" id="loading-txt">Connexion à Excel…</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL CONFIG -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h2>⚙️ Configuration</h2>
+    <label>Nom de l'onglet Élèves</label>
+    <input type="text" id="cfg-eleves" placeholder="Élèves" />
+    <label>Nom de l'onglet Présences</label>
+    <input type="text" id="cfg-presences" placeholder="Présences" />
+    <p class="modal-note">
+      ℹ️ L'onglet <strong>Élèves</strong> doit avoir les noms en colonne A (à partir de A2, A1 = "Nom").<br>
+      L'onglet <strong>Présences</strong> sera créé automatiquement s'il n'existe pas.
+    </p>
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="sauvegarderConfig()">✅ Enregistrer</button>
+      <button class="btn-secondary" onclick="fermerConfig()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <div class="logo">📋</div>
+      <div class="title">Présences <span>Edulab — Excel Add-in</span></div>
+    </div>
+    <div class="header-pills">
+      <div class="pill"><span class="dot dot-p"></span><span id="sp">0</span> P</div>
+      <div class="pill"><span class="dot dot-a"></span><span id="sa">0</span> A</div>
+      <div class="pill"><span id="st">0</span> élèves</div>
+    </div>
+  </header>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="field">
+      <span class="ico">📆</span>
+      <input type="date" id="date-input" onchange="onDateChange()"/>
+    </div>
+    <div class="field search">
+      <span class="ico">🔍</span>
+      <input type="text" id="search" placeholder="Rechercher…" oninput="renderListe()"/>
+    </div>
+    <button class="btn-ico" onclick="recharger()" title="Recharger">🔄</button>
+    <button class="btn-ico" onclick="ouvrirConfig()" title="Paramètres">⚙️</button>
+  </div>
+
+  <!-- QUICK BAR -->
+  <div class="quick">
+    <button class="chip chip-p" onclick="tousP()">✅ Tous présents</button>
+    <button class="chip chip-a" onclick="tousA()">❌ Tous absents</button>
+    <button class="chip chip-r" onclick="tousR()">↺ Réinitialiser</button>
+    <span class="cpt" id="cpt">—</span>
+  </div>
+
+  <!-- GRILLE -->
+  <div class="scroll">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <!-- SAVE BAR -->
+  <div class="save-bar">
+    <button class="btn-save" id="btn-save" onclick="enregistrer()" disabled>
+      💾 Enregistrer les présences
+    </button>
+    <div class="status" id="status"></div>
+  </div>
+
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   ÉTAT GLOBAL
+══════════════════════════════════════════ */
+let eleves  = [];
+let etats   = {};
+let dateStr = "";
+let saving  = false;
+let CFG     = { eleves: "Élèves", presences: "Présences" };
+
+/* ══════════════════════════════════════════
+   INIT OFFICE.JS
+══════════════════════════════════════════ */
+Office.onReady(function(info) {
+  // Charger config locale
+  const saved = localStorage.getItem("edulab_cfg");
+  if (saved) CFG = JSON.parse(saved);
+
+  // Date du jour
+  const now = new Date();
+  dateStr = now.getFullYear() + "-" +
+    String(now.getMonth()+1).padStart(2,"0") + "-" +
+    String(now.getDate()).padStart(2,"0");
+  document.getElementById("date-input").value = dateStr;
+
+  chargerEleves();
+});
+
+/* ══════════════════════════════════════════
+   LIRE LES ÉLÈVES DEPUIS EXCEL
+══════════════════════════════════════════ */
+function chargerEleves() {
+  showOverlay("Lecture de la liste d'élèves…");
+  Excel.run(function(ctx) {
+    var sheet = ctx.workbook.worksheets.getItemOrNullObject(CFG.eleves);
+    sheet.load("isNullObject,name");
+    return ctx.sync().then(function() {
+      if (sheet.isNullObject) {
+        hideOverlay();
+        toast("❌ Onglet \"" + CFG.eleves + "\" introuvable. Vérifie ⚙️ Config.", 5000);
+        setStatus("Onglet introuvable", "err");
+        return;
+      }
+      var range = sheet.getUsedRange();
+      range.load("values");
+      return ctx.sync().then(function() {
+        var vals = range.values;
+        var liste = [];
+        for (var i = 1; i < vals.length; i++) {
+          var n = String(vals[i][0] || "").trim();
+          if (n) liste.push(n);
+        }
+        eleves = liste;
+        etats  = {};
+        liste.forEach(function(n){ etats[n] = ""; });
+        document.getElementById("btn-save").disabled = false;
+        chargerPresencesExistantes();
+      });
+    });
+  }).catch(function(e) {
+    hideOverlay();
+    toast("❌ Erreur : " + e.message, 5000);
+  });
+}
+
+/* ══════════════════════════════════════════
+   LIRE LES PRÉSENCES EXISTANTES
+══════════════════════════════════════════ */
+function chargerPresencesExistantes() {
+  Excel.run(function(ctx) {
+    var sheet = ctx.workbook.worksheets.getItemOrNullObject(CFG.presences);
+    sheet.load("isNullObject");
+    return ctx.sync().then(function() {
+      if (sheet.isNullObject) {
+        hideOverlay();
+        renderListe();
+        return;
+      }
+      var range = sheet.getUsedRange();
+      range.load("values");
+      return ctx.sync().then(function() {
+        var data = range.values;
+        if (!data || data.length === 0) { hideOverlay(); renderListe(); return; }
+        var headers  = data[0];
+        var colIndex = headers.indexOf(dateStr);
+        if (colIndex !== -1) {
+          for (var i = 1; i < data.length; i++) {
+            var nom = String(data[i][0] || "").trim();
+            if (nom && etats.hasOwnProperty(nom)) {
+              etats[nom] = String(data[i][colIndex] || "");
+            }
+          }
+        }
+        hideOverlay();
+        renderListe();
+      });
+    });
+  }).catch(function(e) {
+    hideOverlay();
+    renderListe();
+  });
+}
+
+/* ══════════════════════════════════════════
+   RENDU GRILLE
+══════════════════════════════════════════ */
+function renderListe() {
+  var filtre  = document.getElementById("search").value.toLowerCase().trim();
+  var filtres = eleves.filter(function(n){ return n.toLowerCase().includes(filtre); });
+  var grid    = document.getElementById("grid");
+
+  if (!filtres.length) {
+    grid.innerHTML = '<div class="empty"><span class="emo">🔍</span><p>Aucun élève trouvé</p>' +
+      (filtre ? '<small>pour "' + filtre + '"</small>' : '<small>La liste est vide.</small>') + '</div>';
+    majStats(); return;
+  }
+
+  grid.innerHTML = filtres.map(function(nom) {
+    var e   = etats[nom] || "";
+    var cls = e==="P" ? "present" : e==="A" ? "absent" : "";
+    var bc  = e==="P" ? "b-present" : e==="A" ? "b-absent" : "b-none";
+    var bt  = e==="P" ? "P" : e==="A" ? "A" : "—";
+    var ini = nom.trim().charAt(0).toUpperCase();
+    var hint= e===""  ? "Cliquer pour marquer"
+            : e==="P" ? "Présent ✓" : "Absent ✗";
+    var ne  = nom.replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+    return '<div class="card ' + cls + '" onclick="cycler(\'' + ne + '\',this)">' +
+      '<div class="card-top">' +
+      '<div class="avatar">' + ini + '</div>' +
+      '<div class="nom">' + nom + '</div>' +
+      '<div class="badge ' + bc + '">' + bt + '</div>' +
+      '</div>' +
+      '<div class="hint">' + hint + '</div>' +
+      '</div>';
+  }).join("");
+  majStats();
+}
+
+/* ══════════════════════════════════════════
+   CYCLE D'ÉTAT
+══════════════════════════════════════════ */
+function cycler(nom, el) {
+  var a = etats[nom] || "";
+  etats[nom] = a===""?"P":a==="P"?"A":"";
+  if (el) {
+    el.classList.remove("pop");
+    void el.offsetWidth;
+    el.classList.add("pop");
+    el.addEventListener("animationend",function(){ el.classList.remove("pop"); },{once:true});
+  }
+  renderListe();
+}
+
+function tousP() { eleves.forEach(function(n){ etats[n]="P"; }); renderListe(); }
+function tousA() { eleves.forEach(function(n){ etats[n]="A"; }); renderListe(); }
+function tousR() { eleves.forEach(function(n){ etats[n]=""; }); renderListe(); }
+
+/* ══════════════════════════════════════════
+   STATS
+══════════════════════════════════════════ */
+function majStats() {
+  var p=0,a=0,x=0;
+  eleves.forEach(function(n){
+    if(etats[n]==="P") p++;
+    else if(etats[n]==="A") a++;
+    else x++;
+  });
+  document.getElementById("sp").textContent = p;
+  document.getElementById("sa").textContent = a;
+  document.getElementById("st").textContent = eleves.length;
+  document.getElementById("cpt").textContent =
+    p+" présent(s) · "+a+" absent(s) · "+x+" non marqué(s)";
+}
+
+/* ══════════════════════════════════════════
+   CHANGEMENT DE DATE
+══════════════════════════════════════════ */
+function onDateChange() {
+  dateStr = document.getElementById("date-input").value;
+  eleves.forEach(function(n){ etats[n]=""; });
+  showOverlay("Chargement de la date…");
+  chargerPresencesExistantes();
+}
+
+/* ══════════════════════════════════════════
+   ENREGISTREMENT DANS EXCEL
+══════════════════════════════════════════ */
+function enregistrer() {
+  if (saving || !dateStr) return;
+  saving = true;
+  var btn = document.getElementById("btn-save");
+  btn.disabled = true;
+  btn.textContent = "⏳ Enregistrement…";
+  setStatus("", "");
+
+  Excel.run(function(ctx) {
+    var sheets = ctx.workbook.worksheets;
+
+    // Créer l'onglet Présences si absent
+    var presSheet = sheets.getItemOrNullObject(CFG.presences);
+    presSheet.load("isNullObject");
+
+    return ctx.sync().then(function() {
+      if (presSheet.isNullObject) {
+        presSheet = sheets.add(CFG.presences);
+        presSheet.getRange("A1").values = [["Nom"]];
+        presSheet.getRange("A1").format.font.bold = true;
+        presSheet.getRange("A1").format.fill.color = "#f3f3f3";
+      }
+
+      // Lire les données existantes
+      var usedRange = presSheet.getUsedRangeOrNullObject();
+      usedRange.load("isNullObject,values,rowCount,columnCount,address");
+
+      return ctx.sync().then(function() {
+        var data    = (!usedRange.isNullObject && usedRange.values) ? usedRange.values : [["Nom"]];
+        var headers = data[0];
+
+        // Trouver ou créer la colonne date
+        var colIdx = headers.indexOf(dateStr);
+        if (colIdx === -1) {
+          colIdx = headers.length;
+          var hCell = presSheet.getCell(0, colIdx);
+          hCell.values = [[dateStr]];
+          hCell.format.font.bold = true;
+          hCell.format.fill.color = "#cfe2f3";
+          hCell.format.horizontalAlignment = "Center";
+        }
+
+        // Mapping nom → ligne dans presences
+        var ligneParNom = {};
+        for (var i = 1; i < data.length; i++) {
+          var n = String(data[i][0] || "").trim();
+          if (n) ligneParNom[n] = i;
+        }
+
+        // Ajouter les élèves manquants
+        eleves.forEach(function(nom) {
+          if (!ligneParNom.hasOwnProperty(nom)) {
+            var newRow = Object.keys(ligneParNom).length + 1;
+            // Trouver la vraie prochaine ligne libre
+            newRow = data.length;
+            ligneParNom[nom] = newRow;
+            presSheet.getCell(newRow, 0).values = [[nom]];
+            data.push([nom]);
+          }
+        });
+
+        // Écrire les états P/A
+        eleves.forEach(function(nom) {
+          var rowIdx = ligneParNom[nom];
+          if (rowIdx !== undefined) {
+            var cell = presSheet.getCell(rowIdx, colIdx);
+            var val  = etats[nom] || "";
+            cell.values = [[val]];
+            cell.format.font.bold = true;
+            cell.format.horizontalAlignment = "Center";
+            if (val === "P") cell.format.fill.color = "#d9ead3";
+            else if (val === "A") cell.format.fill.color = "#fce8e6";
+            else cell.format.fill.color = "#ffffff";
+          }
+        });
+
+        return ctx.sync();
+      });
+    });
+  }).then(function() {
+    saving = false;
+    btn.disabled = false;
+    btn.textContent = "💾 Enregistrer les présences";
+    setStatus("✅ Sauvegardé !", "ok");
+    toast("✅ Présences enregistrées pour le " + dateStr);
+    setTimeout(function(){ setStatus("",""); }, 4000);
+  }).catch(function(e) {
+    saving = false;
+    btn.disabled = false;
+    btn.textContent = "💾 Enregistrer les présences";
+    setStatus("❌ " + e.message, "err");
+    toast("❌ Erreur : " + e.message, 5000);
+  });
+}
+
+/* ══════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════ */
+function ouvrirConfig() {
+  document.getElementById("cfg-eleves").value    = CFG.eleves;
+  document.getElementById("cfg-presences").value = CFG.presences;
+  document.getElementById("modal-bg").classList.add("on");
+}
+function fermerConfig() {
+  document.getElementById("modal-bg").classList.remove("on");
+}
+function sauvegarderConfig() {
+  CFG.eleves    = document.getElementById("cfg-eleves").value.trim()    || "Élèves";
+  CFG.presences = document.getElementById("cfg-presences").value.trim() || "Présences";
+  localStorage.setItem("edulab_cfg", JSON.stringify(CFG));
+  fermerConfig();
+  toast("⚙️ Config sauvegardée !");
+  recharger();
+}
+document.getElementById("modal-bg").addEventListener("click", function(e) {
+  if (e.target === this) fermerConfig();
+});
+
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function recharger() {
+  eleves.forEach(function(n){ etats[n]=""; });
+  chargerEleves();
+}
+function showOverlay(txt) {
+  document.getElementById("loading-txt").textContent = txt || "Chargement…";
+  document.getElementById("overlay").classList.remove("off");
+}
+function hideOverlay() {
+  document.getElementById("overlay").classList.add("off");
+}
+function toast(msg, dur) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("on");
+  setTimeout(function(){ t.classList.remove("on"); }, dur || 3000);
+}
+function setStatus(msg, cls) {
+  var el = document.getElementById("status");
+  el.textContent = msg;
+  el.className = "status" + (cls ? " " + cls : "");
+}
+</script>
+</body>
+</html>
